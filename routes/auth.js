@@ -58,7 +58,7 @@ router.post("/verify", async (req, res) => {
       }
       const newPushToken = await User.findOneAndUpdate(
       { email: profileData.email.toLowerCase() },
-      { pushToken:  req.body.pushToken}
+      { pushToken:  profileData.pushToken}
       );
       const token = jwt.sign({ id: data._id }, "tumo_students");
       console.log(token);
