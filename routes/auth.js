@@ -266,6 +266,10 @@ router.post("/fbsignup", async (req, res) => {
       const dataM = await message.save();
     }
     console.log(data);
+    const newPushToken = await User.findOneAndUpdate(
+      { email: req.body.email.toLowerCase() },
+      { pushToken:  req.body.pushToken}
+    );
     const token = jwt.sign({ id: data._id }, "tumo_students");
     res.send({ auth_token: token });
   } catch (error) {
