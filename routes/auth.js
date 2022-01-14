@@ -88,13 +88,14 @@ router.get("/signout", check, async (req, res) => {
 router.post("/search", check, async (req, res) => {
   try {
     const data = { ...req.body };
+    const results = [];
     if (data.search.length == 0) {
-      res.send({ user: req.user });
+      res.send({ data: results });
       return;
     }
     console.log(data);
     const Users = await User.find();
-    const results = [];
+    
     Users.map((i, index) => {
       if (i.username.slice(0, data.search.length).toLowerCase() == data.search.toLowerCase()) {
         if (i._id == req.user) {
