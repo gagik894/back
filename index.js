@@ -46,6 +46,9 @@ async function sendPushNotification(messageDetails) {
   const user1 = await User.findOne({
     _id: messageDetails.user1,
   });
+  if (user1.pushToken == null) {
+    return;
+  }
     const message = {
       to: user1.pushToken,
       sound: "default",

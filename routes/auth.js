@@ -32,7 +32,7 @@ router.post("/signin", async (req, res) => {
     }
     const newPushToken = await User.findOneAndUpdate(
       { email: req.body.email.toLowerCase() },
-      { pushToken:  req.body.pushToken}
+      { pushToken: req.body.pushToken }
     );
     const token = jwt.sign({ id: emailExists._id }, "tumo_students");
     res.send({ auth_token: token });
@@ -57,8 +57,8 @@ router.post("/verify", async (req, res) => {
         const dataM = await message.save();
       }
       const newPushToken = await User.findOneAndUpdate(
-      { email: profileData.email.toLowerCase() },
-      { pushToken:  profileData.pushToken}
+        { email: profileData.email.toLowerCase() },
+        { pushToken: profileData.pushToken }
       );
       const token = jwt.sign({ id: data._id }, "tumo_students");
       console.log(token);
@@ -71,8 +71,45 @@ router.post("/verify", async (req, res) => {
     console.log(error);
   }
 });
-router.get("/signout", async (req, res) => {
-    conole.log("test");
+router.get("/signout", check, async (req, res) => {
+  try {
+    console.log("test");
+    const newPushToken = await User.findOneAndUpdate(
+      { _id: req.user },
+      { pushToken: null }
+    );
+    res.send({ user: req.user });
+  } catch (error) {
+    res.status(400).send({ error: "Something went wrong" });
+    console.log(error);
+  }
+});
+
+router.post("/search", check, async (req, res) => {
+  try {
+    const data = { ...req.body };
+    if (data.search.length == 0) {
+      res.send({ user: req.user });
+      return;
+    }
+    console.log(data);
+    const Users = await User.find();
+    const results = [];
+    Users.map((i, index) => {
+      if (i.username.slice(0, data.search.length).toLowerCase() == data.search.toLowerCase()) {
+        if (i._id == req.user) {
+          return;
+        }
+        // console.log("true")
+        results.push(i);
+      }
+    });
+    console.log(results)
+    res.send({ data: results });
+  } catch (error) {
+    res.status(400).send({ error: "Something went wrong" });
+    console.log(error);
+  }
 });
 
 router.post("/passwordchange", async (req, res) => {
@@ -251,7 +288,7 @@ router.post("/fbsignup", async (req, res) => {
     if (existEmail) {
       const newPushToken = await User.findOneAndUpdate(
         { email: req.body.email.toLowerCase() },
-        { pushToken:  req.body.pushToken}
+        { pushToken: req.body.pushToken }
       );
       const token = jwt.sign({ id: existEmail._id }, "tumo_students");
       res.send({ auth_token: token });
@@ -268,7 +305,7 @@ router.post("/fbsignup", async (req, res) => {
     console.log(data);
     const newPushToken = await User.findOneAndUpdate(
       { email: req.body.email.toLowerCase() },
-      { pushToken:  req.body.pushToken}
+      { pushToken: req.body.pushToken }
     );
     const token = jwt.sign({ id: data._id }, "tumo_students");
     res.send({ auth_token: token });
@@ -276,7 +313,6 @@ router.post("/fbsignup", async (req, res) => {
     console.log(error);
     res.status(400).send({ error: error });
   }
-
 });
 
 router.post("/signup/test", async (req, res) => {
@@ -315,7 +351,7 @@ router.get("/remove", check, async (req, res) => {
         }
       }
     }
-    
+
     for (let i = 0; i < posts.length; i++) {
       for (let y = 0; y < posts[i].likedpeople.length; y++) {
         if (posts[i].dislikedpeople[y] == req.user) {
@@ -339,7 +375,7 @@ router.get("/remove", check, async (req, res) => {
       }
     }
     const userData = await User.find();
-    console.log(userData,req.user);
+    console.log(userData, req.user);
     for (let i = 0; i < userData.length; i++) {
       for (let y = 0; y < userData[i].followings.length; y++) {
         if (userData[i].followings[y] == req.user) {
@@ -359,7 +395,7 @@ router.get("/remove", check, async (req, res) => {
       }
     }
     const data = await User.findOneAndDelete({ _id: req.user });
-    
+
     res.send(data);
   } catch (error) {
     res.status(400).send({ error: "Something went wrong" });
