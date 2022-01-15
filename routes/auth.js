@@ -95,7 +95,6 @@ router.post("/search", check, async (req, res) => {
     }
     console.log(data);
     const Users = await User.find();
-    
     Users.map((i, index) => {
       if (i.username.slice(0, data.search.length).toLowerCase() == data.search.toLowerCase()) {
         if (i._id == req.user) {
