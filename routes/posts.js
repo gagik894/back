@@ -114,7 +114,7 @@ router.post("/post/:id/like", check, async (req, res) => {
       const UserData = await User.findByIdAndUpdate(userid, {
         $push: { likedposts: id },
       });
-      res.send({update: "updated"});
+      res.send({ update: "updated" });
     } else if (like.like == "dislike") {
       const data = await Post.findByIdAndUpdate(id, {
         dislikes: postData.dislikes + 1,
@@ -123,7 +123,7 @@ router.post("/post/:id/like", check, async (req, res) => {
       const UserData = await User.findByIdAndUpdate(userid, {
         $push: { dislikedposts: id },
       });
-      res.send({update: "updated"});
+      res.send({ update: "updated" });
     } else if (like.like == "unlike") {
       const data = await Post.findByIdAndUpdate(id, {
         likes: postData.likes - 1,
@@ -132,7 +132,7 @@ router.post("/post/:id/like", check, async (req, res) => {
       const UserData = await User.findByIdAndUpdate(userid, {
         $pull: { likedposts: { $in: id } },
       });
-      res.send({update: "updated"});
+      res.send({ update: "updated" });
     } else if (like.like == "undislike") {
       const data = await Post.findByIdAndUpdate(id, {
         dislikes: postData.dislikes - 1,
@@ -141,7 +141,7 @@ router.post("/post/:id/like", check, async (req, res) => {
       const UserData = await User.findByIdAndUpdate(userid, {
         $pull: { dislikedposts: { $in: id } },
       });
-      res.send({update: "updated"});
+      res.send({ update: "updated" });
     }
   } catch (error) {
     res.status(400).send({ error: error });
@@ -248,6 +248,46 @@ router.post("/add/:change", check, upload.single("image"), async (req, res) => {
   }
 });
 
+router.post("/new/video", check, upload.single("video"), async (req, res) => {
+  const profileData = { ...req.body };
+  profileData.userId = req.user;
+  console.log(req.file,"1234");
+  try {
+    async function createFiles(auth) {
+      let responseData;
+      const bodyVideo = req.file.path;
+      const drive = google.drive({ version: "v3", auth });
+      const res = await drive.files.create({
+        requestBody: {
+          mimeType: "video/mp4",
+          parents: [folderId],
+        },
+        media: {
+          mimeType: "video/mp4",
+          body: fs.createReadStream(bodyVideo),
+        },
+      });
+      responseData = res.data;
+      fs.unlinkSync(bodyVideo);
+      save(responseData);
+    }
+    fs.readFile("credentials.json", (err, content) => {
+      if (err) return console.log("Error loading client secret file:", err);
+      // Authorize a client with credentials, then call the Google Drive API.
+      authorize(JSON.parse(content), createFiles);
+    });
+    async function save(imageData) {
+        profileData.imgId = await imageData.id;
+        profileData.type = "video";
+        const post = new Post(profileData);
+        const data = await post.save();
+        res.send(data);
+    }
+  } catch (error) {
+    res.status(400).send({ error: "Something went wrong" });
+  }
+});
+
 router.get("/user/:userId", check, async (req, res) => {
   try {
     const data = await Post.find({ userId: req.params.userId }).populate(
@@ -263,21 +303,20 @@ router.get("/user/:userId", check, async (req, res) => {
 
 router.get("/profile/:id", check, async (req, res) => {
   try {
-    const id = req.params.id
-    if(id == "my" || id == req.user){
+    const id = req.params.id;
+    if (id == "my" || id == req.user) {
       const data = await Post.find({ userId: req.user }).populate(
         "userId",
         "fullname username email avatar coverImgUrl _id"
       );
       res.send({ data: data, User: req.user });
-    }else{
+    } else {
       const data = await Post.find({ userId: id }).populate(
         "userId",
         "fullname username email avatar coverImgUrl _id"
       );
       res.send({ data: data, User: req.user });
     }
-    
   } catch (error) {
     console.log(error);
     res.status(400).send({ error: "Something went wrong" });
@@ -306,7 +345,7 @@ router.delete("/post/:id/delete", check, async (req, res) => {
       authorize(JSON.parse(content), deleteFiles);
     });
     async function save() {
-      const userData = await User.find()
+      const userData = await User.find();
       for (let i = 0; i < userData.length; i++) {
         for (let y = 0; y < userData[i].likedposts.length; y++) {
           if (userData[i].likedposts[y] == id) {

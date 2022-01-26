@@ -54,6 +54,10 @@ const postSchema = new mongoose.Schema({
     type: Array,
     default: [],
   },
+  type: {
+    type: String,
+    default: "image",
+  }
 });
 
 module.exports = mongoose.model("Post", postSchema);
