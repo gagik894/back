@@ -36,7 +36,7 @@ mongoose.connect(
     console.log("connected to db");
   }
 );
-
+//a
 const db = mongoose.connection;
 
 async function sendPushNotification(messageDetails) {
